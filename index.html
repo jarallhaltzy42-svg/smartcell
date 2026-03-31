@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Nexus Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #f5f7fa, #e4e8f0, #d9e0eb);
+            color: #1a1a2e;
+        }
+
+        body.light-mode .lock-card {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.light-mode .tab-btn {
+            background: rgba(0,0,0,0.08);
+            color: #1a1a2e;
+        }
+
+        body.light-mode .tab-btn.active {
+            background: linear-gradient(45deg, #0066cc, #00aaff);
+            color: #fff;
+        }
+
+        body.light-mode .link-card {
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        body.light-mode .footer {
+            border-top-color: rgba(0,0,0,0.1);
+            color: #666;
+        }
+
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .lock-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .lock-card h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d2ff, #3a47d5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .lock-card input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .lock-card button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #00d2ff, #3a47d5);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            margin-top: 15px;
+        }
+
+        .main-content {
+            display: none;
+            padding: 20px;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(45deg, #00d2ff, #a8c0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-buttons {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .settings-btn, .theme-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #00d2ff, #3a47d5);
+        }
+
+        .add-tab-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px dashed #00d2ff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .link-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .link-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .link-url {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .open-link {
+            background: linear-gradient(45deg, #00d2ff, #3a47d5);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .delete-link {
+            background: rgba(255,80,80,0.3);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 25px;
+            color: #ff6b6b;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .add-link-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .add-link-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            outline: none;
+        }
+
+        .add-link-btn {
+            background: #00d2ff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #aaa;
+            padding: 40px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            color: #888;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a3c);
+            border-radius: 30px;
+            padding: 30px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .settings-option {
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .settings-option select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .modal-confirm, .modal-cancel {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .modal-confirm {
+            background: #00d2ff;
+            color: #000;
+        }
+
+        .modal-cancel {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+    <div class="lock-card">
+        <h1>🔐 Nexus Hub</h1>
+        <p>أدخل كلمة السر للدخول</p>
+        <input type="password" id="passwordInput" placeholder="••••••">
+        <button id="unlockBtn">فتح</button>
+        <div id="lockError" class="error-msg"></div>
+    </div>
+</div>
+
+<div class="main-content" id="mainContent">
+    <div class="header">
+        <h1>🪐 Nexus Hub</h1>
+        <p>مركزك الشامل للروابط والأدوات</p>
+        <div class="header-buttons">
+            <button id="settingsBtn" class="settings-btn">⚙️</button>
+            <button id="themeToggleBtn" class="theme-btn">🌙</button>
+        </div>
+    </div>
+
+    <div class="tabs" id="tabsContainer"></div>
+    <div id="tabsContentContainer"></div>
+    
+    <div class="footer">
+        <p>م.جارالله التعزي</p>
+    </div>
+</div>
+
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <h3>⚙️ الإعدادات</h3>
+        <div class="settings-option">
+            <label>⏱️ مدة الجلسة</label>
+            <select id="sessionTimeoutSelect">
+                <option value="15">15 دقيقة</option>
+                <option value="30">30 دقيقة</option>
+                <option value="60">ساعة</option>
+                <option value="120">ساعتين</option>
+            </select>
+        </div>
+        <div class="settings-option">
+            <label>🎨 المظهر</label>
+            <select id="themeSelect">
+                <option value="dark">داكن</option>
+                <option value="light">فاتح</option>
+            </select>
+        </div>
+        <button id="closeSettingsBtn" class="modal-confirm">حفظ</button>
+    </div>
+</div>
+
+<div class="modal" id="addTabModal">
+    <div class="modal-content">
+        <h3>➕ إضافة تبويب</h3>
+        <input type="text" id="newTabName" placeholder="اسم التبويب">
+        <button id="confirmAddTab" class="modal-confirm">إضافة</button>
+        <button id="cancelAddTab" class="modal-cancel">إلغاء</button>
+    </div>
+</div>
+
+<script>
+    const CORRECT_PASSWORD = "jar753$$";
+    let sessionTimer = null;
+    let sessionTimeoutMinutes = 120;
+    let isSessionActive = false;
+
+    let hubData = {
+        tabs: [
+            { id: "tab1", name: "🎨 تصميم مواقع", links: [
+                { name: "Canva", url: "https://www.canva.com" },
+                { name: "Figma", url: "https://www.figma.com" },
+                { name: "Adobe Color", url: "https://color.adobe.com" }
+            ]},
+            { id: "tab2", name: "💻 أكواد وبرمجة", links: [
+                { name: "GitHub", url: "https://github.com" },
+                { name: "CodePen", url: "https://codepen.io" },
+                { name: "Stack Overflow", url: "https://stackoverflow.com" }
+            ]},
+            { id: "tab3", name: "✍️ إنشاء محتوى", links: [
+                { name: "ChatGPT", url: "https://chat.openai.com" },
+                { name: "Google Docs", url: "https://docs.google.com" },
+                { name: "Canva", url: "https://www.canva.com" }
+            ]},
+            { id: "tab4", name: "🤖 أدوات ذكاء اصطناعي", links: [
+                { name: "ChatGPT", url: "https://chat.openai.com" },
+                { name: "Midjourney", url: "https://www.midjourney.com" },
+                { name: "Claude AI", url: "https://claude.ai" }
+            ]},
+            { id: "tab5", name: "🐍 بايثون", links: [
+                { name: "Python.org", url: "https://www.python.org" },
+                { name: "W3Schools", url: "https://www.w3schools.com/python" },
+                { name: "Real Python", url: "https://realpython.com" },
+                { name: "PyPI", url: "https://pypi.org" },
+                { name: "Google Colab", url: "https://colab.research.google.com" },
+                { name: "Replit", url: "https://replit.com" }
+            ]}
+        ],
+        activeTabId: "tab1"
+    };
+
+    function openLink(url) {
+        window.open(url, '_blank');
+        resetTimer();
+    }
+
+    function resetTimer() {
+        if (!isSessionActive) return;
+        if (sessionTimer) clearTimeout(sessionTimer);
+        sessionTimer = setTimeout(function() {
+            isSessionActive = false;
+            document.getElementById("lockScreen").style.display = "flex";
+            document.getElementById("mainContent").style.display = "none";
+            alert("انتهت الجلسة");
+        }, sessionTimeoutMinutes * 60 * 1000);
+    }
+
+    function saveData() {
+        localStorage.setItem("nexusData", JSON.stringify(hubData));
+    }
+
+    function loadData() {
+        let saved = localStorage.getItem("nexusData");
+        if (saved) {
+            try {
+                let parsed = JSON.parse(saved);
+                if (parsed.tabs && parsed.tabs.length > 0) {
+                    hubData = parsed;
+                }
+            } catch(e) {}
+        }
+    }
+
+    function addTab(name) {
+        let newId = "tab_" + Date.now();
+        hubData.tabs.push({ id: newId, name: name, links: [] });
+        hubData.activeTabId = newId;
+        saveData();
+        renderAll();
+    }
+
+    function addLink(tabId, name, url) {
+        let tab = hubData.tabs.find(t => t.id === tabId);
+        if (tab && name && url) {
+            if (!url.startsWith("http")) url = "https://" + url;
+            tab.links.push({ name: name, url: url });
+            saveData();
+            renderTabContent(tabId);
+        }
+    }
+
+    function deleteLink(tabId, idx) {
+        let tab = hubData.tabs.find(t => t.id === tabId);
+        if (tab && tab.links[idx] && confirm("حذف الرابط؟")) {
+            tab.links.splice(idx, 1);
+            saveData();
+            renderTabContent(tabId);
+        }
+    }
+
+    function deleteTab(tabId) {
+        if (hubData.tabs.length <= 1) return alert("لا يمكن حذف آخر تبويب");
+        let tab = hubData.tabs.find(t => t.id === tabId);
+        if (tab && confirm("حذف التبويب " + tab.name + "؟")) {
+            hubData.tabs = hubData.tabs.filter(t => t.id !== tabId);
+            if (hubData.activeTabId === tabId) hubData.activeTabId = hubData.tabs[0].id;
+            saveData();
+            renderAll();
+        }
+    }
+
+    function renderTabs() {
+        let container = document.getElementById("tabsContainer");
+        let html = "";
+        hubData.tabs.forEach(tab => {
+            html += `<button class="tab-btn ${hubData.activeTabId === tab.id ? 'active' : ''}" data-id="${tab.id}">
+                        ${tab.name}
+                        <span style="margin-left:8px; color:#ff6b6b;" onclick="event.stopPropagation(); deleteTab('${tab.id}')">🗑️</span>
+                    </button>`;
+        });
+        html += `<button class="tab-btn add-tab-btn" id="showAddTabBtn">➕ تبويب</button>`;
+        container.innerHTML = html;
+        
+        document.querySelectorAll(".tab-btn[data-id]").forEach(btn => {
+            btn.onclick = (e) => {
+                if (e.target.tagName === "SPAN") return;
+                hubData.activeTabId = btn.getAttribute("data-id");
+                saveData();
+                renderAll();
+                resetTimer();
+            };
+        });
+        
+        document.getElementById("showAddTabBtn").onclick = () => {
+            document.getElementById("addTabModal").classList.add("active");
+            resetTimer();
+        };
+    }
+
+    function renderTabContent(tabId) {
+        let tab = hubData.tabs.find(t => t.id === tabId);
+        if (!tab) return;
+        
+        let container = document.getElementById("tabsContentContainer");
+        let linksHtml = "";
+        
+        if (tab.links.length === 0) {
+            linksHtml = "<div class='empty-msg'>✨ لا توجد روابط ✨</div>";
+        } else {
+            linksHtml = "<div class='links-grid'>";
+            tab.links.forEach((link, i) => {
+                linksHtml += `
+                    <div class="link-card">
+                        <div>
+                            <div class="link-name">🔗 ${link.name}</div>
+                            <div class="link-url">${link.url}</div>
+                        </div>
+                        <div>
+                            <button class="open-link" data-url="${link.url}">فتح</button>
+                            <button class="delete-link" data-idx="${i}">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            linksHtml += "</div>";
+        }
+        
+        linksHtml += `
+            <div class="add-link-area">
+                <input type="text" id="newLinkName" placeholder="اسم الموقع">
+                <input type="text" id="newLinkUrl" placeholder="الرابط">
+                <button id="addLinkBtn">+ إضافة</button>
+            </div>
+        `;
+        
+        container.innerHTML = `<div class="tab-content active">${linksHtml}</div>`;
+        
+        document.querySelectorAll(".open-link").forEach(btn => {
+            btn.onclick = () => openLink(btn.getAttribute("data-url"));
+        });
+        
+        document.querySelectorAll(".delete-link").forEach(btn => {
+            btn.onclick = () => deleteLink(tabId, parseInt(btn.getAttribute("data-idx")));
+        });
+        
+        document.getElementById("addLinkBtn").onclick = () => {
+            let name = document.getElementById("newLinkName").value.trim();
+            let url = document.getElementById("newLinkUrl").value.trim();
+            if (name && url) {
+                addLink(tabId, name, url);
+                document.getElementById("newLinkName").value = "";
+                document.getElementById("newLinkUrl").value = "";
+            } else {
+                alert("أدخل الاسم والرابط");
+            }
+            resetTimer();
+        };
+    }
+
+    function renderAll() {
+        renderTabs();
+        renderTabContent(hubData.activeTabId);
+    }
+
+    function initLock() {
+        document.getElementById("unlockBtn").onclick = () => {
+            let pass = document.getElementById("passwordInput").value;
+            if (pass === CORRECT_PASSWORD) {
+                document.getElementById("lockScreen").style.display = "none";
+                document.getElementById("mainContent").style.display = "flex";
+                loadData();
+                renderAll();
+                isSessionActive = true;
+                resetTimer();
+            } else {
+                document.getElementById("lockError").textContent = "❌ كلمة سر خاطئة";
+            }
+        };
+    }
+
+    function initModals() {
+        let addModal = document.getElementById("addTabModal");
+        document.getElementById("confirmAddTab").onclick = () => {
+            let name = document.getElementById("newTabName").value.trim();
+            if (name) {
+                addTab(name);
+                addModal.classList.remove("active");
+                document.getElementById("newTabName").value = "";
+            }
+            resetTimer();
+        };
+        document.getElementById("cancelAddTab").onclick = () => {
+            addModal.classList.remove("active");
+            resetTimer();
+        };
+        
+        let settingsModal = document.getElementById("settingsModal");
+        document.getElementById("settingsBtn").onclick = () => {
+            document.getElementById("sessionTimeoutSelect").value = sessionTimeoutMinutes;
+            settingsModal.classList.add("active");
+            resetTimer();
+        };
+        document.getElementById("closeSettingsBtn").onclick = () => {
+            sessionTimeoutMinutes = parseInt(document.getElementById("sessionTimeoutSelect").value);
+            let theme = document.getElementById("themeSelect").value;
+            if (theme === "light") {
+                document.body.classList.add("light-mode");
+                document.getElementById("themeToggleBtn").textContent = "☀️";
+            } else {
+                document.body.classList.remove("light-mode");
+                document.getElementById("themeToggleBtn").textContent = "🌙";
+            }
+            localStorage.setItem("nexusTheme", theme);
+            localStorage.setItem("nexusTimeout", sessionTimeoutMinutes);
+            settingsModal.classList.remove("active");
+            if (isSessionActive) resetTimer();
+        };
+        
+        document.getElementById("themeToggleBtn").onclick = () => {
+            let isLight = document.body.classList.toggle("light-mode");
+            document.getElementById("themeToggleBtn").textContent = isLight ? "☀️" : "🌙";
+            localStorage.setItem("nexusTheme", isLight ? "light" : "dark");
+            resetTimer();
+        };
+        
+        let savedTheme = localStorage.getItem("nexusTheme");
+        if (savedTheme === "light") {
+            document.body.classList.add("light-mode");
+            document.getElementById("themeToggleBtn").textContent = "☀️";
+        }
+        let savedTimeout = localStorage.getItem("nexusTimeout");
+        if (savedTimeout) sessionTimeoutMinutes = parseInt(savedTimeout);
+    }
+
+    initLock();
+    initModals();
+</script>
+</body>
+</html>
